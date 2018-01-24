@@ -9,10 +9,11 @@ import (
 
 func main() {
 	sc := gon.NewScheduler()
-	sc.AddEveryNSecond(Tick, 3)
-	sc.AddEveryNSecond(Tick, 5)
-	sc.AddEveryNSecond(Tick, 10)
-	sc.AddEveryNSecond(Tick, 15)
+	fmt.Printf("Adding tickers at intervals 3, 5, 10 and 15 seconds.\n")
+	sc.RepeatSeconds(3, Tick)
+	sc.RepeatSeconds(5, Tick)
+	sc.RepeatSeconds(10, Tick)
+	sc.RepeatSeconds(15, Tick)
 	fmt.Printf("Waiting…\n")
 	time.Sleep(time.Second * 22)
 	sc.Wait()
