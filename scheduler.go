@@ -4,6 +4,7 @@ import (
 	"sync"
 )
 
+// Scheduler holds pointers to all the tickers and timers.
 type Scheduler struct {
 	sync.RWMutex
 	seconds      map[int]*Ticker
@@ -14,6 +15,7 @@ type Scheduler struct {
 	delayhours   map[int]*Ticker
 }
 
+// NewScheduler returns a Scheduler populated with maps.
 func NewScheduler() *Scheduler {
 	return &Scheduler{
 		seconds:      make(map[int]*Ticker),
@@ -29,13 +31,13 @@ func NewScheduler() *Scheduler {
 func (sc *Scheduler) AddEveryNSecond(f TickerFunc, n int) {
 	sc.Lock()
 	defer sc.Unlock()
-	timer, ok := sc.seconds[n]
+	t, ok := sc.seconds[n]
 	if !ok {
-		timer = NewTimer(n)
-		sc.seconds[n] = timer
+		t = NewTicker(n)
+		sc.seconds[n] = t
 	}
-	timer.AddFunc(f)
-	timer.Start()
+	t.AddFunc(f)
+	t.Start()
 }
 
 // Wait for all waitgroups in tickers and timers.
