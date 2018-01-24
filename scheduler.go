@@ -2,6 +2,7 @@ package gon
 
 import (
 	"sync"
+	"time"
 )
 
 // Scheduler holds pointers to all the tickers and timers.
@@ -47,6 +48,15 @@ func (sc *Scheduler) RepeatMinutes(n int, f TickerFunc) {
 // RepeatHours adds a repeating task on an hour-based interval.
 func (sc *Scheduler) RepeatHours(n int, f TickerFunc) {
 	sc.addTicker(&sc.hours, n, f)
+}
+
+// AddAlarmIn triggers functions after a specific duration has passed.
+func (sc *Scheduler) AddAlarmIn(d time.Duration) {
+
+}
+
+func (sc *Scheduler) AddAlarmAt(t time.Time) {
+
 }
 
 // Wait for all waitgroups in tickers and timers.
