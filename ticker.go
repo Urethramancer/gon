@@ -12,6 +12,7 @@ type Ticker struct {
 	sync.RWMutex
 	wg       sync.WaitGroup
 	interval int
+	duration time.Duration
 	ticker   *time.Ticker
 	quit     chan bool
 	funcs    map[int64]TickerFunc
@@ -21,9 +22,10 @@ type Ticker struct {
 type TickerFunc func(int64)
 
 // NewTicker
-func NewTicker(i int) *Ticker {
+func NewTicker(i int, d time.Duration) *Ticker {
 	t := &Ticker{
 		interval: i,
+		duration: d,
 		funcs:    make(map[int64]TickerFunc)}
 	t.quit = make(chan bool, 0)
 	return t
@@ -39,7 +41,7 @@ func (t *Ticker) AddFunc(f TickerFunc) {
 
 // Start creates the time.Ticker and handles the calls at intervals.
 func (t *Ticker) Start() {
-	t.ticker = time.NewTicker(time.Second * time.Duration(t.interval))
+	t.ticker = time.NewTicker(t.duration)
 	for {
 		select {
 		case <-t.ticker.C:

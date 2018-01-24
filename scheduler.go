@@ -23,12 +23,12 @@ func NewScheduler() *Scheduler {
 	}
 }
 
-func (sc *Scheduler) addTicker(m *map[int]*Ticker, n int, f TickerFunc) {
+func (sc *Scheduler) addTicker(m *map[int]*Ticker, n int, d time.Duration, f TickerFunc) {
 	sc.Lock()
 	defer sc.Unlock()
 	t, ok := (*m)[n]
 	if !ok {
-		t = NewTicker(n)
+		t = NewTicker(n, d)
 		(*m)[n] = t
 	}
 	t.AddFunc(f)
@@ -37,17 +37,17 @@ func (sc *Scheduler) addTicker(m *map[int]*Ticker, n int, f TickerFunc) {
 
 // RepeatSeconds adds a repeating task based on a seconds interval.
 func (sc *Scheduler) RepeatSeconds(n int, f TickerFunc) {
-	sc.addTicker(&sc.seconds, n, f)
+	sc.addTicker(&sc.seconds, n, time.Second*time.Duration(n), f)
 }
 
 // RepeatMinutes adds a repeating task on a minute-based interval.
 func (sc *Scheduler) RepeatMinutes(n int, f TickerFunc) {
-	sc.addTicker(&sc.minutes, n, f)
+	sc.addTicker(&sc.minutes, n, time.Minute*time.Duration(n), f)
 }
 
 // RepeatHours adds a repeating task on an hour-based interval.
 func (sc *Scheduler) RepeatHours(n int, f TickerFunc) {
-	sc.addTicker(&sc.hours, n, f)
+	sc.addTicker(&sc.hours, n, time.Hour*time.Duration(n), f)
 }
 
 // AddAlarmIn triggers functions after a specific duration has passed.
@@ -56,6 +56,11 @@ func (sc *Scheduler) AddAlarmIn(d time.Duration) {
 }
 
 func (sc *Scheduler) AddAlarmAt(t time.Time) {
+
+}
+
+// AddRepeatingAlarmAt is sort of like a crontab entry.
+func (sc *Scheduler) AddRepeatingAlarmAt(t time.Time) {
 
 }
 
