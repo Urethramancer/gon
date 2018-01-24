@@ -20,7 +20,7 @@ type Ticker struct {
 // TickerFunc is the signature of the callbacks run by the ticker.
 type TickerFunc func(int64)
 
-// NewTickerer
+// NewTicker
 func NewTicker(i int) *Ticker {
 	t := &Ticker{
 		interval: i,
