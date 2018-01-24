@@ -29,7 +29,7 @@ func NewTicker(i int) *Ticker {
 	return t
 }
 
-// AddFunc adds anothe callback to the slice with a new ID.
+// AddFunc adds another callback to the funcs map with a new ID.
 func (t *Ticker) AddFunc(f TickerFunc) {
 	t.Lock()
 	defer t.Unlock()
