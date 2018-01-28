@@ -8,10 +8,12 @@ import (
 // Scheduler holds pointers to all the tickers and timers.
 type Scheduler struct {
 	sync.RWMutex
-	seconds map[int]*Ticker
-	minutes map[int]*Ticker
-	hours   map[int]*Ticker
-	alarms  map[int]*Alarm
+	tickerid int64
+	alarmid  int64
+	seconds  map[int]*Ticker
+	minutes  map[int]*Ticker
+	hours    map[int]*Ticker
+	alarms   map[int]*Alarm
 }
 
 // NewScheduler returns a Scheduler populated with maps.
@@ -31,7 +33,8 @@ func (sc *Scheduler) addTicker(m *map[int]*Ticker, n int, d time.Duration, f Tic
 		t = NewTicker(n, d)
 		(*m)[n] = t
 	}
-	t.AddFunc(f)
+	sc.tickerid++
+	t.AddFunc(f, sc.tickerid)
 	go t.Start()
 }
 
@@ -55,6 +58,7 @@ func (sc *Scheduler) AddAlarmIn(d time.Duration) {
 
 }
 
+// AddAlarmAt triggers functions at a specific time of day.
 func (sc *Scheduler) AddAlarmAt(t time.Time) {
 
 }

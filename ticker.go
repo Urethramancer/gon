@@ -14,8 +14,8 @@ type Ticker struct {
 	interval int
 	duration time.Duration
 	ticker   *time.Ticker
-	quit     chan bool
 	funcs    map[int64]TickerFunc
+	quit     chan bool
 }
 
 // TickerFunc is the signature of the callbacks run by the ticker.
@@ -32,11 +32,10 @@ func NewTicker(i int, d time.Duration) *Ticker {
 }
 
 // AddFunc adds another callback to the funcs map with a new ID.
-func (t *Ticker) AddFunc(f TickerFunc) {
+func (t *Ticker) AddFunc(f TickerFunc, id int64) {
 	t.Lock()
 	defer t.Unlock()
-	tickerid++
-	t.funcs[tickerid] = f
+	t.funcs[id] = f
 }
 
 // Start creates the time.Ticker and handles the calls at intervals.
