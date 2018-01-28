@@ -25,6 +25,11 @@ func NewScheduler() *Scheduler {
 	}
 }
 
+//
+// Tickers
+// Repeating events
+//
+
 func (sc *Scheduler) addTicker(m *map[int]*Ticker, n int, d time.Duration, f TickerFunc) {
 	sc.Lock()
 	defer sc.Unlock()
@@ -51,6 +56,23 @@ func (sc *Scheduler) RepeatMinutes(n int, f TickerFunc) {
 // RepeatHours adds a repeating task on an hour-based interval.
 func (sc *Scheduler) RepeatHours(n int, f TickerFunc) {
 	sc.addTicker(&sc.hours, n, time.Hour*time.Duration(n), f)
+}
+
+//
+// Alarms
+// One-time events
+//
+
+func (sc *Scheduler) addAlarm(m *map[int]*Alarm, n int, d time.Duration, f AlarmFunc) {
+	sc.Lock()
+	defer sc.Unlock()
+	alarm, ok := (*m)[n]
+	if !ok {
+		alarm = NewAlarm(d)
+	}
+	sc.alarmid++
+	alarm.AddFunc(f, sc.alarmid)
+	go alarm.Start()
 }
 
 // AddAlarmIn triggers functions after a specific duration has passed.
