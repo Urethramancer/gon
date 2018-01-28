@@ -15,6 +15,9 @@ type Scheduler struct {
 	alarms         map[int64]*Alarm
 }
 
+// EventFunc is the signature of the ticker/alarm callbacks.
+type EventFunc func(int64)
+
 // NewScheduler returns a Scheduler populated with maps.
 func NewScheduler() *Scheduler {
 	return &Scheduler{
@@ -28,7 +31,7 @@ func NewScheduler() *Scheduler {
 // Repeating events
 //
 
-func (sc *Scheduler) addTicker(d time.Duration, f TickerFunc) {
+func (sc *Scheduler) addTicker(d time.Duration, f EventFunc) {
 	sc.Lock()
 	defer sc.Unlock()
 	t, ok := sc.tickers[d]
@@ -59,17 +62,17 @@ func (sc *Scheduler) RemoveTicker(d time.Duration) {
 }
 
 // RepeatSeconds adds a repeating task based on a seconds interval.
-func (sc *Scheduler) RepeatSeconds(n int, f TickerFunc) {
+func (sc *Scheduler) RepeatSeconds(n int, f EventFunc) {
 	sc.addTicker(time.Second*time.Duration(n), f)
 }
 
 // RepeatMinutes adds a repeating task on a minute-based interval.
-func (sc *Scheduler) RepeatMinutes(n int, f TickerFunc) {
+func (sc *Scheduler) RepeatMinutes(n int, f EventFunc) {
 	sc.addTicker(time.Minute*time.Duration(n), f)
 }
 
 // RepeatHours adds a repeating task on an hour-based interval.
-func (sc *Scheduler) RepeatHours(n int, f TickerFunc) {
+func (sc *Scheduler) RepeatHours(n int, f EventFunc) {
 	sc.addTicker(time.Hour*time.Duration(n), f)
 }
 
@@ -78,12 +81,13 @@ func (sc *Scheduler) RepeatHours(n int, f TickerFunc) {
 // One-time events
 //
 
-func (sc *Scheduler) addAlarm(d time.Duration, f AlarmFunc) {
+func (sc *Scheduler) addAlarm(d time.Duration, f EventFunc, repeat bool) {
 	sc.Lock()
 	defer sc.Unlock()
 	sc.alarmid++
 	alarm := NewAlarm(d, sc.alarmid, f)
 	alarm.scheduler = sc
+	alarm.repeat = repeat
 	sc.alarms[sc.alarmid] = alarm
 	go alarm.Start()
 }
@@ -100,19 +104,14 @@ func (sc *Scheduler) RemoveAlarm(id int64) {
 }
 
 // AddAlarmIn triggers functions after a specific duration has passed.
-func (sc *Scheduler) AddAlarmIn(d time.Duration, f AlarmFunc) {
-
+func (sc *Scheduler) AddAlarmIn(d time.Duration, f EventFunc) {
+	sc.addAlarm(d, f, false)
 }
 
 // AddAlarmAt triggers functions at a specific time of day.
-func (sc *Scheduler) AddAlarmAt(t time.Time, f AlarmFunc) {
-	when := t.Sub(time.Now())
-	sc.addAlarm(when, f)
-}
-
-// AddRepeatingAlarmAt is sort of like a crontab entry.
-func (sc *Scheduler) AddRepeatingAlarmAt(t time.Time, f AlarmFunc) {
-
+func (sc *Scheduler) AddAlarmAt(t time.Time, f EventFunc, repeat bool) {
+	when := time.Until(t)
+	sc.addAlarm(when, f, repeat)
 }
 
 // Wait for all waitgroups in tickers and alarms.

@@ -11,24 +11,21 @@ type Ticker struct {
 	wg       sync.WaitGroup
 	duration time.Duration
 	ticker   *time.Ticker
-	funcs    map[int64]TickerFunc
+	funcs    map[int64]EventFunc
 	quit     chan bool
 }
 
-// TickerFunc is the signature of the callbacks run by the ticker.
-type TickerFunc func(int64)
-
-// NewTicker
+// NewTicker creates the Ticker structure and quit channel.
 func NewTicker(d time.Duration) *Ticker {
 	t := &Ticker{
 		duration: d,
-		funcs:    make(map[int64]TickerFunc)}
-	t.quit = make(chan bool, 0)
+		funcs:    make(map[int64]EventFunc)}
+	t.quit = make(chan bool)
 	return t
 }
 
 // AddFunc adds another callback to the funcs map with a new ID.
-func (t *Ticker) AddFunc(f TickerFunc, id int64) {
+func (t *Ticker) AddFunc(f EventFunc, id int64) {
 	t.Lock()
 	defer t.Unlock()
 	t.funcs[id] = f
@@ -42,8 +39,8 @@ func (t *Ticker) Start() {
 		case <-t.ticker.C:
 			t.RLock()
 			for k, f := range t.funcs {
-				go func(id int64, tf TickerFunc) {
-					t.wg.Add(1)
+				t.wg.Add(1)
+				go func(id int64, tf EventFunc) {
 					tf(id)
 					t.wg.Done()
 				}(k, f)
