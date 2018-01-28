@@ -11,7 +11,7 @@ func main() {
 	sc := gon.NewScheduler()
 	fmt.Printf("Adding alarm in 10 seconds.\n")
 	when := time.Now().Add(time.Second * 10)
-	sc.AddAlarmAt(when, event)
+	sc.AddAlarmAt(when, event, false)
 	fmt.Printf("Adding tickers at intervals 3, 5, 10 and 15 seconds.\n")
 	sc.RepeatSeconds(3, tick)
 	sc.RepeatSeconds(5, tick)
