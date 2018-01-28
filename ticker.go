@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-var tickerid int64
-
 // Ticker runs one or more functions, repeating at an interval.
 type Ticker struct {
 	sync.RWMutex
