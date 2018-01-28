@@ -8,10 +8,11 @@ import (
 // Scheduler holds pointers to all the tickers and timers.
 type Scheduler struct {
 	sync.RWMutex
-	tickerid int64
-	alarmid  int64
-	tickers  map[time.Duration]*Ticker
-	alarms   map[int64]*Alarm
+	tickerid       int64
+	alarmid        int64
+	tickers        map[time.Duration]*Ticker
+	dormantTickers map[time.Duration]*Ticker
+	alarms         map[int64]*Alarm
 }
 
 // NewScheduler returns a Scheduler populated with maps.
@@ -32,12 +33,29 @@ func (sc *Scheduler) addTicker(d time.Duration, f TickerFunc) {
 	defer sc.Unlock()
 	t, ok := sc.tickers[d]
 	if !ok {
-		t = NewTicker(d)
-		sc.tickers[d] = t
+		t, ok = sc.dormantTickers[d]
+		if ok {
+			delete(sc.dormantTickers, d)
+			sc.tickers[d] = t
+		} else {
+			t = NewTicker(d)
+			sc.tickers[d] = t
+		}
 	}
 	sc.tickerid++
 	t.AddFunc(f, sc.tickerid)
 	go t.Start()
+}
+
+func (sc *Scheduler) RemoveTicker(d time.Duration) {
+	sc.Lock()
+	defer sc.Unlock()
+	t, ok := sc.tickers[d]
+	if ok {
+		t.Stop()
+		delete(sc.tickers, d)
+		sc.dormantTickers[d] = t
+	}
 }
 
 // RepeatSeconds adds a repeating task based on a seconds interval.

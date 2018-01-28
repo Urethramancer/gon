@@ -51,6 +51,9 @@ func (t *Ticker) Start() {
 			t.RUnlock()
 		case <-t.quit:
 			t.ticker.Stop()
+			for k := range t.funcs {
+				delete(t.funcs, k)
+			}
 			return
 		}
 	}
