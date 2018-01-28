@@ -26,12 +26,11 @@ func NewAlarm(d time.Duration) *Alarm {
 	return a
 }
 
-// AddFunc adds anothe callback to the slice with a new ID.
-func (a *Alarm) AddFunc(f AlarmFunc) {
+// AddFunc adds another callback to the funcs map with a new ID.
+func (a *Alarm) AddFunc(f AlarmFunc, id int64) {
 	a.Lock()
 	defer a.Unlock()
-	alarmid++
-	a.funcs[alarmid] = f
+	a.funcs[id] = f
 }
 
 func (a *Alarm) Start() {
