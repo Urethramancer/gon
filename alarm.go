@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Alarm runs a single function once.
 type Alarm struct {
 	sync.RWMutex
 	scheduler *Scheduler
@@ -58,6 +59,7 @@ func (a *Alarm) Start() {
 
 // Stop and remove the alarm.
 func (a *Alarm) Stop() {
+	a.Wait()
 	a.quit <- true
 	a.scheduler.RemoveAlarm(a.id)
 }

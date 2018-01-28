@@ -50,6 +50,7 @@ func (sc *Scheduler) addTicker(d time.Duration, f EventFunc) {
 	go t.Start()
 }
 
+// RemoveTicker removes a ticker by duration, stopping it if necessary.
 func (sc *Scheduler) RemoveTicker(d time.Duration) {
 	sc.Lock()
 	defer sc.Unlock()

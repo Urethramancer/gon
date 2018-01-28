@@ -58,6 +58,7 @@ func (t *Ticker) Start() {
 
 // Stop the ticker.
 func (t *Ticker) Stop() {
+	t.Wait()
 	t.quit <- true
 }
 
