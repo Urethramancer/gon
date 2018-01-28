@@ -5,15 +5,13 @@ import (
 	"time"
 )
 
-var alarmid int64
-
 type Alarm struct {
 	sync.RWMutex
 	wg    sync.WaitGroup
 	delay time.Duration
 	timer *time.Timer
-	quit  chan bool
 	funcs map[int64]AlarmFunc
+	quit  chan bool
 }
 
 // AlarmFunc is the signature of the callbacks run when the timer triggers.
