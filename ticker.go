@@ -9,7 +9,6 @@ import (
 type Ticker struct {
 	sync.RWMutex
 	wg       sync.WaitGroup
-	interval int
 	duration time.Duration
 	ticker   *time.Ticker
 	funcs    map[int64]TickerFunc
@@ -20,9 +19,8 @@ type Ticker struct {
 type TickerFunc func(int64)
 
 // NewTicker
-func NewTicker(i int, d time.Duration) *Ticker {
+func NewTicker(d time.Duration) *Ticker {
 	t := &Ticker{
-		interval: i,
 		duration: d,
 		funcs:    make(map[int64]TickerFunc)}
 	t.quit = make(chan bool, 0)
@@ -58,7 +56,7 @@ func (t *Ticker) Start() {
 	}
 }
 
-// Stop sends a signal to the quit channel.
+// Stop the ticker.
 func (t *Ticker) Stop() {
 	t.quit <- true
 }

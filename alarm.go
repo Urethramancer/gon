@@ -7,30 +7,27 @@ import (
 
 type Alarm struct {
 	sync.RWMutex
-	wg    sync.WaitGroup
-	delay time.Duration
-	timer *time.Timer
-	funcs map[int64]AlarmFunc
-	quit  chan bool
+	scheduler *Scheduler
+	wg        sync.WaitGroup
+	delay     time.Duration
+	timer     *time.Timer
+	id        int64
+	f         AlarmFunc
+	quit      chan bool
 }
 
 // AlarmFunc is the signature of the callbacks run when the timer triggers.
 type AlarmFunc func(int64)
 
 // NewAlarm
-func NewAlarm(d time.Duration) *Alarm {
+func NewAlarm(d time.Duration, aid int64, af AlarmFunc) *Alarm {
 	a := &Alarm{
 		delay: d,
-		funcs: make(map[int64]AlarmFunc)}
+		id:    aid,
+		f:     af,
+	}
 	a.quit = make(chan bool, 0)
 	return a
-}
-
-// AddFunc adds another callback to the funcs map with a new ID.
-func (a *Alarm) AddFunc(f AlarmFunc, id int64) {
-	a.Lock()
-	defer a.Unlock()
-	a.funcs[id] = f
 }
 
 func (a *Alarm) Start() {
@@ -39,15 +36,14 @@ func (a *Alarm) Start() {
 		select {
 		case <-a.timer.C:
 			a.RLock()
-			for k, f := range a.funcs {
-				go func(id int64, af AlarmFunc) {
-					a.wg.Add(1)
-					af(id)
-					a.wg.Done()
-				}(k, f)
-			}
+			go func(id int64, af AlarmFunc) {
+				a.wg.Add(1)
+				af(id)
+				a.wg.Done()
+			}(a.id, a.f)
 			a.RUnlock()
 			a.wg.Wait()
+			a.scheduler.RemoveAlarm(a.id)
 			return
 		case <-a.quit:
 			a.timer.Stop()
@@ -56,6 +52,13 @@ func (a *Alarm) Start() {
 	}
 }
 
+// Stop and remove the alarm.
 func (a *Alarm) Stop() {
 	a.quit <- true
+	a.scheduler.RemoveAlarm(a.id)
+}
+
+// Wait for the event to finish.
+func (a *Alarm) Wait() {
+	a.wg.Wait()
 }
