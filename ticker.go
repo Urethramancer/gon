@@ -37,7 +37,7 @@ func (t *Ticker) Start() {
 	for {
 		select {
 		case <-t.ticker.C:
-			t.RLock()
+			t.Lock()
 			for k, f := range t.funcs {
 				t.wg.Add(1)
 				go func(id int64, tf EventFunc) {
@@ -45,7 +45,7 @@ func (t *Ticker) Start() {
 					t.wg.Done()
 				}(k, f)
 			}
-			t.RUnlock()
+			t.Unlock()
 		case <-t.quit:
 			t.ticker.Stop()
 			for k := range t.funcs {
@@ -58,8 +58,8 @@ func (t *Ticker) Start() {
 
 // Stop the ticker.
 func (t *Ticker) Stop() {
-	t.Wait()
 	t.quit <- true
+	t.Wait()
 }
 
 // Wait for the current scheduled task in the ticker to finish.
