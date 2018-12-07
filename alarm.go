@@ -36,13 +36,13 @@ func (a *Alarm) Start() {
 	for {
 		select {
 		case <-a.timer.C:
-			a.RLock()
+			a.Lock()
 			a.wg.Add(1)
 			go func(id int64, af EventFunc) {
 				af(id)
 				a.wg.Done()
 			}(a.id, a.f)
-			a.RUnlock()
+			a.Unlock()
 			a.wg.Wait()
 			if a.repeat {
 				// The alarm transitions to repeating ticker here
