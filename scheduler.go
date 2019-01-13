@@ -21,8 +21,9 @@ type EventFunc func(int64)
 // NewScheduler returns a Scheduler populated with maps.
 func NewScheduler() *Scheduler {
 	return &Scheduler{
-		tickers: make(map[time.Duration]*Ticker),
-		alarms:  make(map[int64]*Alarm),
+		tickers:        make(map[time.Duration]*Ticker),
+		dormantTickers: make(map[time.Duration]*Ticker),
+		alarms:         make(map[int64]*Alarm),
 	}
 }
 
